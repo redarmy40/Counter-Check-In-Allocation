@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Check-in Counter Allocation Dashboard (W26 Weekly)</title>
+<script>(function(){var t=null;try{t=localStorage.getItem("theme")}catch(e){}if(!t)t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";document.documentElement.dataset.theme=t})()</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light;
+  --bg:#eef1f5;--surface:#fff;--surface2:#f5f7fa;--txt:#0e1b2c;--mut:#5b6b80;--bd:#dde3ea;
+  --pri:#1b4fd6;--pri2:#2f6bf0;--pri-soft:#e6edfd;--btn:#2559e6;--btnh:#1b46bd;--onbtn:#fff;
+  --amb:#c77f00;--amb-bg:#fff0cc;--amb-fg:#744600;--red:#d12f2f;--red-bg:#fde4e4;--red-fg:#8e1c1c;
+  --grn:#13874a;--grn-bg:#dcf5e6;--grn-fg:#0d5c32;--hl:#fff3c4;
+  --head:#0b1b33;--head2:#14376d;--heat:47,107,240;--onheat:#fff;
+  --c1:#9db8f5;--c2:#2f6bf0;--c3:#d98a00;--c4:#7c5cdb;--c5:#0f9fc9;
+  --shadow:0 1px 2px rgba(14,27,44,.06),0 6px 18px rgba(14,27,44,.05);
+  --font:'IBM Plex Sans Thai','Sarabun','Leelawadee UI','Tahoma',sans-serif;
+}
+:root[data-theme=dark]{
+  color-scheme:dark;
+  --bg:#0a121e;--surface:#111c2b;--surface2:#172640;--txt:#e6edf6;--mut:#93a3b8;--bd:#25354d;
+  --pri:#78a9ff;--pri2:#5b92ff;--pri-soft:#17294a;--btn:#4f86f5;--btnh:#6a9bff;--onbtn:#06101f;
+  --amb:#f2b035;--amb-bg:#3a2c0b;--amb-fg:#ffd68a;--red:#ff6b6b;--red-bg:#3d1618;--red-fg:#ffb3b3;
+  --grn:#46c982;--grn-bg:#10301f;--grn-fg:#9cebc0;--hl:#3a3410;
+  --head:#050b15;--head2:#0e2347;--heat:110,162,255;--onheat:#06101f;
+  --c1:#4d6fb3;--c2:#6a9bff;--c3:#f2b035;--c4:#a48bff;--c5:#4cc4e8;
+  --shadow:0 0 0 1px rgba(255,255,255,.02);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:var(--font);background:var(--bg);color:var(--txt);font-size:14px;line-height:1.5;font-variant-numeric:tabular-nums;transition:background .2s,color .2s}
+:focus-visible{outline:2px solid var(--pri2);outline-offset:2px}
+
+/* Header */
+header{background:linear-gradient(100deg,var(--head),var(--head2));color:#fff;padding:14px 24px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;border-bottom:3px solid var(--amb)}
+header h1{font-size:19px;font-weight:600;margin:0;flex:1;min-width:260px;letter-spacing:.1px}
+header h1::before{content:"";display:inline-block;width:6px;height:22px;background:#ffb62e;border-radius:2px;margin-right:12px;vertical-align:-4px}
+header .meta{font-size:12px;opacity:.8}
+header .btn.sec,header select{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.28)}
+header .btn.sec:hover{background:rgba(255,255,255,.2)}
+header select option{background:var(--surface);color:var(--txt)}
+.btn.icon{padding:7px 9px;display:inline-flex;align-items:center;justify-content:center}
+.btn.icon svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+:root[data-theme=dark] .i-moon,:root:not([data-theme=dark]) .i-sun{display:none}
+
+/* Controls */
+.btn{background:var(--btn);color:var(--onbtn);border:1px solid transparent;border-radius:8px;padding:8px 14px;cursor:pointer;font-family:inherit;font-size:13px;font-weight:500;transition:background .15s,border-color .15s}
+.btn:hover{background:var(--btnh)}
+.btn.sec{background:var(--surface);color:var(--pri);border-color:var(--bd)}
+.btn.sec:hover{background:var(--pri-soft)}
+input,select{font-family:inherit;font-size:13px;padding:7px 10px;min-height:36px;border:1px solid var(--bd);border-radius:8px;background:var(--surface2);color:var(--txt)}
+input::placeholder{color:var(--mut);opacity:.8}
+input:focus,select:focus{border-color:var(--pri2)}
+.filters label,.row2 label{display:flex;flex-direction:column;font-size:12px;font-weight:500;color:var(--mut);gap:4px}
+#q{width:300px;max-width:100%}
+
+main{padding:16px 24px 40px;max-width:1700px;margin:auto}
+
+/* Drop zone */
+#drop{border:2px dashed var(--bd);border-radius:18px;padding:56px 24px;text-align:center;background:var(--surface);cursor:pointer;margin:40px auto 0;max-width:760px;transition:border-color .15s,background .15s}
+#drop:hover,#drop.over{border-color:var(--pri2);background:var(--pri-soft)}
+#drop .upl{width:44px;height:44px;margin:0 auto 14px;display:block;fill:none;stroke:var(--pri2);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#drop h2{margin:0 0 10px;font-size:19px;font-weight:600}
+#libStatus{margin-top:14px;font-weight:600}
+#err{display:none;background:var(--red-bg);color:var(--red-fg);border:1px solid var(--red);padding:12px 16px;border-radius:10px;margin:12px 0;white-space:pre-wrap}
+
+/* Loading */
+#loading{display:none;position:fixed;inset:0;background:rgba(5,10,20,.6);backdrop-filter:blur(2px);z-index:999;align-items:center;justify-content:center}
+#loading div{background:var(--surface);color:var(--txt);padding:22px 32px;border-radius:14px;font-size:15px;font-weight:600;display:flex;gap:14px;align-items:center;box-shadow:0 10px 40px rgba(0,0,0,.35)}
+.spin{width:24px;height:24px;border:3px solid var(--bd);border-top-color:var(--pri2);border-radius:50%;animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* Filters */
+.filters{background:var(--surface);border:1px solid var(--bd);border-radius:12px;padding:12px 14px;display:flex;flex-wrap:wrap;gap:10px;align-items:end;box-shadow:var(--shadow);z-index:20}
+@media(min-width:900px){.filters{position:sticky;top:8px}}
+
+/* Tabs */
+.tabs{display:flex;gap:2px;margin:18px 0 14px;border-bottom:1px solid var(--bd);overflow-x:auto}
+.tab{padding:10px 16px;cursor:pointer;font-weight:600;color:var(--mut);white-space:nowrap;border-bottom:3px solid transparent;margin-bottom:-1px;border-radius:8px 8px 0 0;transition:color .15s,background .15s}
+.tab:hover{color:var(--txt);background:var(--surface2)}
+.tab.active{color:var(--pri);border-bottom-color:var(--pri2)}
+.panel{display:none}.panel.active{display:block}
+
+/* KPI + cards */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:16px}
+.kpi{background:var(--surface);border:1px solid var(--bd);border-top:3px solid var(--pri2);border-radius:10px;padding:13px 16px;box-shadow:var(--shadow)}
+.kpi .l{font-size:12px;color:var(--mut);font-weight:500}
+.kpi .v{font-size:28px;font-weight:700;line-height:1.25;margin:2px 0}
+.kpi .s{font-size:11.5px;color:var(--mut)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,520px),1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--bd);border-radius:14px;padding:16px;box-shadow:var(--shadow);margin-bottom:14px;overflow:auto}
+.card h3{margin:0 0 12px;font-size:15px;font-weight:600;color:var(--txt)}
+.chartbox{position:relative;height:300px}
+
+/* Tables */
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{padding:7px 10px;border-bottom:1px solid var(--bd);text-align:left;white-space:nowrap}
+th{background:var(--surface2);color:var(--mut);font-weight:600;position:sticky;top:0;cursor:pointer;user-select:none}
+th:hover{color:var(--txt)}
+tr:hover td{background:var(--surface2)}
+.badge{display:inline-block;padding:1px 9px;border-radius:999px;font-size:11px;font-weight:600;background:var(--pri-soft);color:var(--pri)}
+.b-O{background:var(--grn-bg);color:var(--grn-fg)}.b-X{background:var(--red-bg);color:var(--red-fg)}.b-B{background:var(--amb-bg);color:var(--amb-fg)}
+.heat td{text-align:center;font-size:11px;padding:4px 2px;min-width:30px;border-bottom-color:var(--surface)}
+.heat tr:hover td{background:inherit}
+.pager{display:flex;gap:10px;align-items:center;margin-top:12px}
+
+/* Gantt */
+.gantt{font-size:11px;min-width:900px}
+.g-head,.g-row{display:flex;align-items:center}
+.g-lbl{width:64px;flex:none;font-weight:600}
+.g-track{position:relative;flex:1;height:26px;border-bottom:1px solid var(--bd);background-image:linear-gradient(to right,var(--bd) 1px,transparent 1px);background-size:calc(100%/24) 100%}
+.g-hours{display:flex;flex:1}.g-hours div{flex:1;font-size:10px;color:var(--mut)}
+.bar{position:absolute;top:3px;height:20px;border-radius:5px;color:#fff;font-size:10px;font-weight:500;padding:2px 5px;overflow:hidden;white-space:nowrap;cursor:pointer;opacity:.94}
+.bar.dim{opacity:.2}.bar.hl{outline:2px solid var(--txt);outline-offset:1px;opacity:1;z-index:2}
+
+/* Finder / misc */
+.chip{display:inline-block;padding:3px 10px;margin:3px;border-radius:8px;background:var(--grn-bg);color:var(--grn-fg);font-weight:600}
+.chip.busy{background:var(--red-bg);color:var(--red-fg)}
+.row2{display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-bottom:12px}
+.mut{color:var(--mut);font-size:12px}
+.warn{color:var(--red);font-weight:700}
+@media(max-width:640px){header,main{padding-left:14px;padding-right:14px}.kpi .v{font-size:24px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+
+/* Weekly-dashboard extras */
+:root{--heat2:220,38,38}
+:root[data-theme=dark]{--heat2:255,107,107}
+input[type=checkbox]{min-height:0;padding:0;width:16px;height:16px;accent-color:var(--pri2)}
+#infoBox{display:none;background:var(--pri-soft);color:var(--pri);border:1px solid var(--bd);padding:10px 14px;border-radius:10px;margin:12px 0;font-size:13px}
+#warnBox{display:none;background:var(--amb-bg);color:var(--amb-fg);border:1px solid var(--amb);padding:10px 14px;border-radius:10px;margin:12px 0;white-space:pre-wrap;font-size:13px}
+.row2 label.inl{flex-direction:row;align-items:center;gap:6px;color:var(--txt);font-weight:400}
+.hint{font-size:12px;color:var(--txt);align-self:center}
+.chip.rsv{background:var(--amb-bg);color:var(--amb-fg)}
+.bar{z-index:2}
+.blk{position:absolute;top:0;height:26px;border-radius:4px;opacity:.34;z-index:1;font-size:9px;color:var(--txt);padding:0 3px;overflow:hidden;white-space:nowrap;background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.65) 0 4px,transparent 4px 8px)}
+.heat th{text-align:center;font-size:11px;padding:4px 2px;min-width:30px;cursor:default}
+</style>
+</head>
+<body>
+<header>
+  <h1>Check-in Counter Allocation Dashboard (Weekly Pattern)</h1>
+  <span class="meta" id="meta">ยังไม่ได้โหลดข้อมูล</span>
+  <select id="sheetSel" style="display:none"></select>
+  <button class="btn sec" id="openBtn">เปิดไฟล์ Excel</button>
+  <button class="btn sec icon" id="themeBtn" aria-label="สลับธีมสว่าง / มืด" title="สลับธีมสว่าง / มืด"><svg class="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><svg class="i-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+  <input type="file" id="file" accept=".xlsx,.xls,.csv" hidden>
+</header>
+<div id="loading"><div><span class="spin"></span><span id="loadMsg">กำลังประมวลผล...</span></div></div>
+<main>
+<div id="err"></div>
+<div id="infoBox"></div>
+<div id="warnBox"></div>
+<div id="drop"><svg class="upl" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg><h2>ลากไฟล์ Excel มาวางที่ใดก็ได้บนหน้านี้ หรือคลิกเพื่อเลือกไฟล์</h2>
+<div class="mut">รองรับไฟล์ที่แยกชีต Day1–Day7 (1=จันทร์ … 7=อาทิตย์) คอลัมน์: Day / Flight / STD / Des / Counter / Check-in Begin / Check-in End / Aircraft Type / Code Share<br>ชีตเสริมที่อ่านอัตโนมัติ: รายชื่อสายการบิน (IATA Code / Airline Full Name) และ Aircraft Types Data (ประเภทเครื่องบิน / Seats) สำหรับประมาณการผู้โดยสาร<br>ข้อมูลประมวลผลในเครื่องของคุณเท่านั้น</div>
+<div id="libStatus" class="mut">กำลังโหลดไลบรารี...</div></div>
+
+<div id="app" style="display:none">
+<div class="filters">
+  <label>ค้นหา (เที่ยวบิน / Code Share / ปลายทาง / Counter / เครื่องบิน) — ใช้ , คั่นหลายคำ<input id="q" placeholder="เช่น TG 950, PVG, M05"></label>
+  <label>Day (วันในสัปดาห์)<select id="fDay"></select></label>
+  <label>หรือเลือกวันที่จริง<input type="date" id="fDate"></label>
+  <label>Row<select id="fRow"></select></label>
+  <label>สายการบิน<select id="fAl"></select></label>
+  <label>ปลายทาง<select id="fDes"></select></label>
+  <label>เครื่องบิน<select id="fAc"></select></label>
+  <button class="btn sec" id="reset">ล้างตัวกรอง</button>
+  <span class="hint" id="fDateHint"></span>
+</div>
+<div class="tabs">
+  <div class="tab active" data-t="ov">ภาพรวม</div>
+  <div class="tab" data-t="tl">Timeline เคาน์เตอร์</div>
+  <div class="tab" data-t="fd">ค้นหาเคาน์เตอร์ว่าง / ตรวจสอบ</div>
+  <div class="tab" data-t="cf">เวลาทับซ้อน</div>
+  <div class="tab" data-t="tb">ตารางข้อมูล</div>
+  <div class="tab" data-t="bk">Airline Block</div>
+  <div class="tab" data-t="al">สายการบิน</div>
+  <div class="tab" data-t="ac">เครื่องบิน</div>
+</div>
+
+<section class="panel active" id="p-ov">
+  <div class="card"><h3>ช่วง High Season และสมมติฐานผู้โดยสาร</h3>
+    <div class="row2">
+      <label>วันเริ่ม<input type="date" id="sStart"></label>
+      <label>วันสิ้นสุด<input type="date" id="sEnd"></label>
+      <label>Load factor (%)<input type="number" id="lf" min="1" max="100" value="100" style="width:90px" title="ผู้โดยสารประมาณการ = Seats × Load factor"></label>
+      <span class="mut" id="sInfo"></span>
+    </div>
+  </div>
+  <div class="kpis" id="kpis"></div>
+  <div id="noChart" style="display:none"></div>
+  <div class="grid">
+    <div class="card"><h3>เที่ยวบิน / การจัดสรร แยกตาม Day</h3><div class="chartbox"><canvas id="cDaily"></canvas></div></div>
+    <div class="card" id="cardPax"><h3>ผู้โดยสารประมาณการ แยกตาม Day (Seats × Load factor)</h3><div class="chartbox"><canvas id="cPax"></canvas></div></div>
+    <div class="card"><h3>จำนวนเคาน์เตอร์ที่ใช้งานตามชั่วโมง (เฉลี่ยต่อวัน / สูงสุด)</h3><div class="chartbox"><canvas id="cHour"></canvas></div></div>
+    <div class="card"><h3>% การใช้งานต่อ Row (เวลาที่ใช้จริง ÷ ความจุ 24 ชม.)</h3><div class="chartbox"><canvas id="cRow"></canvas></div></div>
+    <div class="card"><h3>Top 15 สายการบิน (จำนวนการจัดสรร/สัปดาห์)</h3><div class="chartbox"><canvas id="cAl"></canvas></div></div>
+    <div class="card"><h3>Top 15 ปลายทาง (เที่ยวบิน/สัปดาห์)</h3><div class="chartbox"><canvas id="cDes"></canvas></div></div>
+    <div class="card"><h3>เคาน์เตอร์เฉลี่ยต่อเที่ยวบิน (Top 15 สายการบิน)</h3><div class="chartbox"><canvas id="cCpf"></canvas></div></div>
+  </div>
+  <div class="card"><h3>Heatmap: จำนวนเคาน์เตอร์ที่ใช้งาน Day × ชั่วโมง</h3><div id="heatDay"></div></div>
+  <div class="card"><h3>Heatmap: % การใช้งานเฉลี่ย Row × ชั่วโมง</h3><div id="heat"></div></div>
+</section>
+
+<section class="panel" id="p-tl">
+  <div class="card">
+    <div class="row2">
+      <label>Day<select id="gDay"></select></label>
+      <label>หรือเลือกวันที่จริง<input type="date" id="gDate"></label>
+      <label>Row<select id="gRow"></select></label>
+      <label class="inl"><input type="checkbox" id="gBlk" checked> แสดง Airline Block (แถบลายทแยง)</label>
+      <span class="hint" id="gDateHint"></span>
+    </div>
+    <div class="mut" style="margin-bottom:6px">แถบสีทึบคือเที่ยวบิน (สีแยกตามสายการบิน) · ถ้ามีคำค้นหา รายการที่ตรงจะถูกไฮไลต์ · ชี้ที่แถบเพื่อดูรายละเอียด</div>
+    <div id="gantt" class="gantt"></div>
+  </div>
+</section>
+
+<section class="panel" id="p-fd">
+  <div class="grid">
+  <div class="card"><h3>ค้นหาเคาน์เตอร์ว่าง</h3>
+    <div class="row2">
+      <label>Day<select id="frDay"></select></label>
+      <label>หรือวันที่จริง<input type="date" id="frDate"></label>
+      <label>เวลาเริ่ม<input type="time" id="frFrom" value="08:00"></label>
+      <label>เวลาสิ้นสุด<input type="time" id="frTo" value="11:00"></label>
+      <label>Row<select id="frRow"></select></label>
+      <button class="btn" id="frGo">ค้นหา</button>
+      <span class="hint" id="frDateHint"></span>
+    </div>
+    <div id="frOut" class="mut">เลือกเงื่อนไขแล้วกด "ค้นหา"</div>
+  </div>
+  <div class="card"><h3>ตรวจสอบว่าเคาน์เตอร์ถูกใช้โดยเที่ยวบินใด</h3>
+    <div class="row2">
+      <label>Counter<input id="ckC" placeholder="เช่น M05" style="width:110px"></label>
+      <label>Day<select id="ckDay"></select></label>
+      <label>หรือวันที่จริง<input type="date" id="ckDate"></label>
+      <label>เวลา<input type="time" id="ckT" value="10:00"></label>
+      <button class="btn" id="ckGo">ตรวจสอบ</button>
+      <span class="hint" id="ckDateHint"></span>
+    </div>
+    <div id="ckOut" class="mut">กรอกเลขเคาน์เตอร์แล้วกด "ตรวจสอบ"</div>
+  </div>
+  </div>
+</section>
+
+<section class="panel" id="p-cf">
+  <div class="card">
+    <div class="row2"><label>Row ที่ใช้ร่วมกันได้ (ไม่นับเป็นเวลาทับซ้อน)<input id="shared" value="Y,D" style="width:140px"></label>
+    <span class="mut">แจ้งเมื่อเคาน์เตอร์เดียวกันถูกจัดให้เที่ยวบินต่างสายการบินในเวลาที่ทับกัน (ไม่นับ Airline Block · คำนวณตามตัวกรองปัจจุบัน)</span></div>
+    <div id="cfOut"></div>
+  </div>
+</section>
+
+<section class="panel" id="p-tb">
+  <div class="card">
+    <div class="row2">
+      <label>มุมมอง<select id="view"><option value="alloc">รายเคาน์เตอร์ (ทุกแถว)</option><option value="flight">รวมตามเที่ยวบิน</option></select></label>
+      <label>แถวต่อหน้า<select id="psz"><option>50</option><option>100</option><option>500</option></select></label>
+      <button class="btn" id="csv">Export CSV</button>
+      <span class="mut" id="tbInfo"></span>
+    </div>
+    <div style="max-height:620px;overflow:auto"><table id="tbl"></table></div>
+    <div class="pager"><button class="btn sec" id="prev">ก่อนหน้า</button><span id="pinfo"></span><button class="btn sec" id="next">ถัดไป</button></div>
+  </div>
+</section>
+
+<section class="panel" id="p-al">
+  <div class="card">
+    <div class="row2">
+      <label>ค้นหา (IATA / ชื่อสายการบิน)<input id="alQ" placeholder="เช่น TG, Thai"></label>
+      <label>แสดง<select id="alMode"><option value="used">เฉพาะสายการบินที่อยู่ในข้อมูล</option><option value="all">ทั้งหมดในชีต</option></select></label>
+      <button class="btn" id="alCsv">Export CSV</button>
+      <span class="mut" id="alInfo"></span>
+    </div>
+    <div style="max-height:620px;overflow:auto"><table id="alTbl"></table></div>
+  </div>
+</section>
+
+<section class="panel" id="p-ac">
+  <div class="card">
+    <div class="row2">
+      <label>ค้นหา (ประเภทเครื่อง / ชื่อ)<input id="acQ" placeholder="เช่น 788, A320"></label>
+      <label>แสดง<select id="acMode"><option value="used">เฉพาะรุ่นที่อยู่ในข้อมูล</option><option value="all">ทั้งหมดในชีต</option></select></label>
+      <button class="btn" id="acCsv">Export CSV</button>
+      <span class="mut" id="acInfo"></span>
+    </div>
+    <div style="max-height:620px;overflow:auto"><table id="acTbl"></table></div>
+  </div>
+</section>
+
+<section class="panel" id="p-bk">
+  <div class="card">
+    <div class="row2">
+      <button class="btn" id="bkCsv">Export CSV</button>
+      <span class="mut" id="bkInfo"></span>
+    </div>
+    <div class="mut" style="margin-bottom:8px">Airline Block คือแถวที่ไม่มี Day / STD / Des ในไฟล์ เป็นช่วงเวลาที่เคาน์เตอร์ถูกกันไว้ให้สายการบิน ระบบผูกเข้ากับวันของชีตนั้น และตัดรายการซ้ำแล้ว</div>
+    <div style="max-height:620px;overflow:auto"><table id="bkTbl"></table></div>
+  </div>
+</section>
+</div>
+</main>
+
+<script>
+(() => {
+'use strict';
+/* ---------- BASIC UI ---------- */
+const getEl = s => document.querySelector(s);
+const getAll = s => [...document.querySelectorAll(s)];
+function showError(e){const el=getEl('#err');el.style.display='block';el.textContent='เกิดข้อผิดพลาด: '+(e&&e.message?e.message:e);console.error(e)}
+window.addEventListener('error',e=>showError(e.error||e.message));
+window.addEventListener('unhandledrejection',e=>showError(e.reason));
+const showLoading=m=>{getEl('#loadMsg').textContent=m;getEl('#loading').style.display='flex'};
+const hideLoading=()=>{getEl('#loading').style.display='none'};
+const tick=()=>new Promise(r=>setTimeout(r,30));
+
+/* ---------- LIBRARIES (fallback CDNs) ---------- */
+const LIBS=[
+ ['XLSX','อ่าน Excel',['https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js','https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js','https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js']],
+ ['Chart','กราฟ',['https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js','https://unpkg.com/chart.js@4.4.1/dist/chart.umd.js','https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js']]];
+const loadScript=src=>new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s)});
+const libsReady=(async()=>{
+  for(const [g,,urls] of LIBS){for(const u of urls){if(window[g])break;try{await loadScript(u)}catch(e){}}}
+  const miss=LIBS.filter(l=>!window[l[0]]).map(l=>l[1]);
+  getEl('#libStatus').innerHTML=miss.length
+    ?`<span class="warn">โหลดไลบรารี${miss.join(', ')}ไม่สำเร็จ — ตรวจสอบอินเทอร์เน็ต หรือเครือข่ายองค์กรอาจบล็อก CDN</span>`
+    :'<span style="color:var(--grn)">พร้อมใช้งาน — วางไฟล์ได้เลย</span>';
+})();
+
+/* ---------- HELPERS (time = minutes from Monday 00:00) ---------- */
+const DM=1440, W=7*DM, Q=15;
+const DAYS=['จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์','อาทิตย์'];
+const DSH=['จ.','อ.','พ.','พฤ.','ศ.','ส.','อา.'];
+const pad=n=>String(n).padStart(2,'0');
+const mm2=m=>pad(Math.floor(m/60))+':'+pad(m%60);
+const wnorm=m=>((m%W)+W)%W;
+const wfmt=m=>{m=wnorm(Math.round(m));return DSH[Math.floor(m/DM)]+' '+mm2(m%DM)};
+const dayLbl=d=>`Day${d} – ${DAYS[d-1]}`;
+const nat=(a,b)=>String(a).localeCompare(String(b),undefined,{numeric:true});
+const fmt=n=>Number(n).toLocaleString('th-TH',{maximumFractionDigits:1});
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const color=s=>{let h=0;for(const c of String(s))h=(h*31+c.charCodeAt(0))%360;return `hsl(${h},62%,45%)`};
+const parseYmd=s=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)};
+const wdOf=s=>(parseYmd(s).getDay()+6)%7+1;
+const dmy=s=>{const [y,m,d]=s.split('-');return `${d}/${m}/${y}`};
+const rowOf=c=>(c.match(/^[A-Z]+/)||['?'])[0];
+const root=document.documentElement;
+const cv=n=>getComputedStyle(root).getPropertyValue(n).trim();
+const S={wb:null,fname:'',all:[],blk:[],f:[],fb:[],days:[],rowCtr:{},c2r:{},charts:{},page:1,sortK:'ord',sortD:1,tableCache:null,blkCache:null,al:{},alSheet:null,alSort:{k:'n',d:-1},alCache:null,ac:{},acRows:[],acSheet:null,acSort:{k:'fl',d:-1},acCache:null};
+const acKey=v=>String(v||'').toUpperCase().replace(/\s+/g,'');
+const seatsOf=r=>{const a=S.ac[acKey(r.ac)];return a?a.seats:null};
+const lf=()=>{const v=+getEl('#lf').value;return (v>0&&v<=100?v:100)/100};
+const seatCell=r=>r.seats==null?'<span class="mut">-</span>':fmt(r.seats);
+const ppcCell=r=>r.ppc==null?'<span class="mut">-</span>':fmt(r.ppc);
+const alLbl=c=>S.al[c]?`${c} — ${S.al[c].en}`:c;
+const alTag=r=>S.al[r.airline]?` <span class="mut">${esc(S.al[r.airline].en)}</span>`:'';
+const alSearch=c=>S.al[c]?S.al[c].en.toUpperCase():'';
+
+/* ---------- THEME ---------- */
+function setTheme(t,save){
+  root.dataset.theme=t;getEl('#themeBtn').setAttribute('aria-pressed',t==='dark');
+  if(save)try{localStorage.setItem('theme',t)}catch(e){}
+  if(S.all.length)try{renderOverview()}catch(e){showError(e)}
+}
+getEl('#themeBtn').onclick=()=>setTheme(root.dataset.theme==='dark'?'light':'dark',true);
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',e=>{let s=null;try{s=localStorage.getItem('theme')}catch(_){}if(!s)setTheme(e.matches?'dark':'light',false)});
+getEl('#themeBtn').setAttribute('aria-pressed',root.dataset.theme==='dark');
+
+/* ---------- PARSERS ---------- */
+function parseDay(v){
+  const s=String(v??'').trim().toLowerCase();if(!s)return null;
+  const m=s.match(/\d+/);if(m){const n=+m[0];return n>=1&&n<=7?n:null}
+  const names=[['mon','จันทร์'],['tue','อังคาร'],['wed','พุธ'],['thu','พฤหัส'],['fri','ศุกร์'],['sat','เสาร์'],['sun','อาทิตย์']];
+  const i=names.findIndex(a=>a.some(k=>s.includes(k)));return i>=0?i+1:null;
+}
+function parseTime(v){
+  if(v==null||v==='')return null;
+  if(typeof v==='number'&&v>=0&&v<1)return Math.round(v*DM)%DM;
+  const s=String(v).trim();let m,h,mi;
+  if(m=s.match(/(\d{1,2}):(\d{2})/)){h=+m[1];mi=+m[2];
+    if(/p\.?m/i.test(s)&&h<12)h+=12; if(/a\.?m/i.test(s)&&h===12)h=0;}
+  else if(m=s.match(/^(\d{1,2})(\d{2})$/)){h=+m[1];mi=+m[2]}
+  else if(/^0?\.\d+$/.test(s))return Math.round(parseFloat(s)*DM)%DM;
+  else return null;
+  if(h>24||mi>59)return null;
+  return (h*60+mi)%DM;
+}
+function parseCounters(v){
+  const s=String(v??'').toUpperCase().replace(/\s*[-–~]\s*/g,'-').trim();if(!s)return [];
+  const out=[];
+  for(const tk of s.split(/[,;\/&+\s]+/).filter(Boolean)){
+    const m=tk.match(/^([A-Z]+)(\d+)-([A-Z]*)(\d+)$/);
+    if(m&&(!m[3]||m[3]===m[1])){const a=+m[2],b=+m[4],w=m[2].length;
+      if(b>=a&&b-a<80){for(let i=a;i<=b;i++)out.push(m[1]+String(i).padStart(w,'0'));continue}}
+    out.push(tk);
+  }
+  return [...new Set(out)];
+}
+function airlineOf(f){
+  if(f.includes(' '))return f.split(' ')[0];
+  const m=f.match(/^([A-Z0-9]{2}[A-Z]?)\d/);return m?m[1]:f.slice(0,2);
+}
+const sheetDayOf=n=>{const m=String(n).match(/day\s*([1-7])\b/i)||String(n).match(/^\s*([1-7])\s*$/);return m?+m[1]:null};
+
+// Convert to week minutes. If check-in time is later than STD -> it started the previous day.
+function weekTime(day,b0,e0,s0){
+  const base=(day-1)*DM;let b=base+b0,e=base+e0;
+  if(s0!=null){if(b0>s0)b-=DM;if(e0>s0)e-=DM}
+  if(e<=b)e+=DM; if(e-b>23*60)e=b+23*60;
+  const bu=b,eu=e;
+  if(b<0){b+=W;e+=W}
+  const segs=e>W?[[b,W],[0,e-W]]:[[b,e]];
+  return {b,e,bu,eu,segs,dur:e-b};
+}
+
+function findHeader(rows){
+  const norm=x=>String(x).toLowerCase().replace(/[\s\-_.]/g,'');
+  for(let i=0;i<Math.min(30,rows.length);i++){
+    const hd=rows[i].map(norm);
+    if(!(hd.includes('flight')&&hd.some(x=>x.startsWith('counter'))))continue;
+    const col=p=>hd.findIndex(p);
+    const I={day:col(x=>x==='day'||x==='dayofweek'||x==='dow'||x==='วัน'),
+      fl:col(x=>x==='flight'||x==='flightno'||x==='flightnumber'),
+      std:col(x=>x==='std'||x.startsWith('std')),
+      des:col(x=>x==='des'||x==='dest'||x==='destination'),
+      row:col(x=>x==='row'),
+      ctr:col(x=>x.startsWith('counter')),
+      b:col(x=>x.includes('begin')||x.includes('open')||x==='checkinstart'),
+      e:col(x=>(x.includes('end')&&!x.includes('begin'))||x.includes('close')),
+      ac:col(x=>x.includes('aircraft')||x==='actype'),
+      cs:col(x=>x.includes('codeshare')||x==='cs')};
+    return {h:i,I,raw:rows[i]};
+  }
+  return null;
+}
+
+function parseSheet(name){
+  const rows=XLSX.utils.sheet_to_json(S.wb.Sheets[name],{header:1,raw:false,defval:''});
+  const hm=findHeader(rows);if(!hm)return null;
+  const {h,I}=hm;
+  const miss=[['fl','Flight'],['ctr','Counter'],['b','Check-in Begin'],['e','Check-in End']].filter(([k])=>I[k]<0).map(x=>x[1]);
+  if(miss.length)throw new Error(`ชีต "${name}" ไม่พบคอลัมน์: ${miss.join(', ')}\nหัวตารางที่พบ: ${hm.raw.join(' | ')}`);
+  const body=rows.slice(h+1);
+  const g=(r,k)=>I[k]>=0?String(r[I[k]]??'').trim():'';
+  // sheet's own day: from name "Day1".."Day7", else the most common Day value
+  let sDay=sheetDayOf(name);
+  if(sDay==null&&I.day>=0){const c={};body.forEach(r=>{const d=parseDay(r[I.day]);if(d)c[d]=(c[d]||0)+1});
+    const t=Object.entries(c).sort((a,b)=>b[1]-a[1])[0];sDay=t?+t[0]:null}
+  const flights=[],blocks=[];let skip=0;const ex=[];
+  for(const r of body){
+    const flight=g(r,'fl').toUpperCase().replace(/\s+/g,' ');
+    const ctrs=parseCounters(r[I.ctr]);
+    if(!flight&&!ctrs.length)continue;
+    const day=I.day>=0?parseDay(r[I.day]):null;
+    const s0=I.std>=0?parseTime(r[I.std]):null;
+    const b0=parseTime(r[I.b]),e0=parseTime(r[I.e]);
+    if(!flight||!ctrs.length||b0==null||e0==null){skip++;if(ex.length<3)ex.push(r.slice(0,9).join(' | '));continue}
+    const airline=airlineOf(flight);
+    if(day==null&&s0==null){                          // Airline block row
+      if(sDay==null){skip++;continue}
+      const t=weekTime(sDay,b0,e0,null);
+      for(const counter of ctrs)blocks.push({...t,type:'block',day:sDay,flight,airline,counter,row:rowOf(counter),sheet:name,ord:sDay*DM+b0});
+      continue;
+    }
+    const d=day??sDay;if(d==null){skip++;if(ex.length<3)ex.push(r.slice(0,9).join(' | '));continue}
+    const t=weekTime(d,b0,e0,s0);
+    for(const counter of ctrs){
+      const row=(I.row>=0&&g(r,'row'))?g(r,'row').toUpperCase():rowOf(counter);
+      flights.push({...t,type:'flight',day:d,flight,airline,std:s0!=null?mm2(s0):g(r,'std'),des:g(r,'des').toUpperCase(),row,counter,
+        ac:g(r,'ac').toUpperCase(),cs:g(r,'cs').toUpperCase().replace(/\s+/g,' '),sheet:name,ord:d*DM+(s0??b0)});
+    }
+  }
+  return {flights,blocks,skip,ex};
+}
+
+/* ---------- SEASON ---------- */
+const SEASON_KEY='ccd_season_w26';
+const seasonRange=()=>({a:getEl('#sStart').value,b:getEl('#sEnd').value});
+function initSeason(){
+  let s={start:'2026-10-25',end:'2027-03-27'};
+  try{Object.assign(s,JSON.parse(localStorage.getItem(SEASON_KEY)||'{}'))}catch(e){}
+  getEl('#sStart').value=s.start;getEl('#sEnd').value=s.end;setDateBounds();
+}
+function setDateBounds(){const {a,b}=seasonRange();['#fDate','#gDate','#frDate','#ckDate'].forEach(id=>{getEl(id).min=a||'';getEl(id).max=b||''})}
+function seasonWeekdays(){
+  const {a,b}=seasonRange();const cnt=Array(8).fill(0);
+  if(!a||!b||a>b)return {cnt,days:0,a,b};
+  let d=parseYmd(a),n=0;const e=parseYmd(b);
+  while(d<=e&&n<1000){cnt[(d.getDay()+6)%7+1]++;n++;d=new Date(d.getFullYear(),d.getMonth(),d.getDate()+1)}
+  return {cnt,days:n,a,b};
+}
+['#sStart','#sEnd'].forEach(id=>getEl(id).onchange=()=>{
+  try{localStorage.setItem(SEASON_KEY,JSON.stringify({start:getEl('#sStart').value,end:getEl('#sEnd').value}))}catch(e){}
+  setDateBounds();if(S.all.length)renderOverview();
+});
+initSeason();
+
+/* ---------- FILE INPUT ---------- */
+const drop=getEl('#drop');
+drop.onclick=()=>getEl('#file').click();
+getEl('#openBtn').onclick=()=>getEl('#file').click();
+window.addEventListener('dragover',e=>{e.preventDefault();drop.classList.add('over')});
+window.addEventListener('dragleave',e=>{if(!e.relatedTarget)drop.classList.remove('over')});
+window.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('over');const f=e.dataTransfer&&e.dataTransfer.files[0];if(f)readFile(f)});
+getEl('#file').onchange=e=>{const f=e.target.files[0];if(f)readFile(f);e.target.value=''};
+
+async function readFile(file){
+  getEl('#err').style.display='none';
+  try{
+    showLoading('กำลังโหลดไลบรารี...');await libsReady;
+    if(!window.XLSX)throw new Error('โหลดไลบรารีอ่าน Excel ไม่สำเร็จ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต');
+    showLoading(`กำลังอ่านไฟล์ ${file.name} ...`);await tick();
+    const buf=await file.arrayBuffer();
+    S.wb=XLSX.read(new Uint8Array(buf),{type:'array'});S.fname=file.name;
+    const al=findAirlines(S.wb);S.al=al.map;S.alSheet=al.name;
+    const ac=findAircraft(S.wb,S.alSheet);S.ac=ac.map;S.acRows=ac.rows;S.acSheet=ac.name;
+    const names=S.wb.SheetNames.filter(n=>n!==S.alSheet&&n!==S.acSheet),sel=getEl('#sheetSel');sel.innerHTML='';
+    if(!names.length)throw new Error('ไม่พบชีตข้อมูลการจัดสรร Counter (ต้องมีคอลัมน์ Flight และ Counter)');
+    if(names.length>1)sel.add(new Option(`ทุกชีต (รวม ${names.length} ชีต)`,'__ALL__'));
+    for(const n of names){const ws=S.wb.Sheets[n];const cnt=ws['!ref']?XLSX.utils.decode_range(ws['!ref']).e.r+1:0;sel.add(new Option(`${n} (${fmt(cnt)} แถว)`,n))}
+    sel.value=names.length>1?'__ALL__':names[0];sel.style.display=names.length>1?'':'none';
+    await loadData(sel.value);
+  }catch(err){showError(err)}finally{hideLoading()}
+}
+getEl('#sheetSel').onchange=async e=>{getEl('#err').style.display='none';try{await loadData(e.target.value)}catch(err){showError(err)}finally{hideLoading()}};
+
+async function loadData(sel){
+  const names=sel==='__ALL__'?S.wb.SheetNames.filter(n=>n!==S.alSheet&&n!==S.acSheet):[sel];
+  const fMap=new Map(),bMap=new Map();let skip=0,dupF=0,dupB=0;const ex=[],used=[],noHdr=[];
+  for(const n of names){
+    showLoading(`กำลังประมวลผลชีต ${n} ...`);await tick();
+    const p=parseSheet(n);if(!p){noHdr.push(n);continue}
+    used.push(n);skip+=p.skip;p.ex.forEach(x=>{if(ex.length<3)ex.push(`[${n}] ${x}`)});
+    for(const r of p.flights){const k=[r.day,r.flight,r.counter,r.b,r.e].join('|');if(fMap.has(k))dupF++;else fMap.set(k,r)}
+    for(const r of p.blocks){const k=[r.day,r.airline,r.counter,r.b,r.e].join('|');if(bMap.has(k))dupB++;else bMap.set(k,r)}
+  }
+  if(!used.length)throw new Error(`ไม่พบหัวตาราง (ต้องมีคอลัมน์ Flight และ Counter) ในชีต: ${noHdr.join(', ')}`);
+  const flights=[...fMap.values()],blocks=[...bMap.values()];
+  if(!flights.length)throw new Error(`อ่านข้อมูลเที่ยวบินได้ 0 แถว — ตรวจสอบรูปแบบ Day (1–7) และเวลา (เช่น 05:30)\n${ex.join('\n')}`);
+  let id=0;
+  flights.forEach(r=>{r.id=id++;r.s=[r.flight,r.des,r.counter,r.cs,r.ac,r.airline,alSearch(r.airline)].join('|').replace(/\s+/g,'')});
+  blocks.forEach(r=>{r.id=id++;r.s=[r.flight,r.counter,r.airline,alSearch(r.airline)].join('|').replace(/\s+/g,'')});
+  S.all=flights;S.blk=blocks;
+  flights.forEach(r=>{r.seats=seatsOf(r)});
+  S.days=[...new Set(flights.map(r=>r.day))].sort((a,b)=>a-b);
+  S.rowCtr={};S.c2r={};[...flights,...blocks].forEach(r=>{(S.rowCtr[r.row]??=new Set()).add(r.counter);S.c2r[r.counter]=r.row});
+
+  const ib=getEl('#infoBox');ib.style.display='block';
+  ib.innerHTML=`อ่านแล้ว <b>${used.length}</b> ชีต (${esc(used.join(', '))}) · การจัดสรรเที่ยวบิน <b>${fmt(flights.length)}</b> รายการ (ตัดรายการซ้ำข้ามชีต ${fmt(dupF)})`+
+    ` · Airline Block <b>${fmt(blocks.length)}</b> รายการ (ตัดซ้ำ ${fmt(dupB)})`+(noHdr.length?` · ข้ามชีตที่ไม่มีหัวตาราง: ${esc(noHdr.join(', '))}`:'')+(S.alSheet?(()=>{const m=[...new Set([...flights,...blocks].map(r=>r.airline))].filter(c=>!S.al[c]).sort(nat);return ` · ชีตสายการบิน <b>${esc(S.alSheet.trim())}</b> ${fmt(Object.keys(S.al).length)} ราย`+(m.length?` · <b>ไม่พบในชีต ${m.length} รหัส:</b> ${esc(m.join(', '))}`:'')})():'')+(S.acSheet?(()=>{const m=[...new Set(S.all.map(r=>acKey(r.ac)).filter(Boolean))].filter(k=>!S.ac[k]).sort(nat);return ` · ชีตเครื่องบิน <b>${esc(S.acSheet.trim())}</b> ${fmt(S.acRows.length)} รุ่น`+(m.length?` · <b>ไม่พบรุ่นเครื่อง ${m.length}:</b> ${esc(m.join(', '))}`:'')})():'');
+  const wb=getEl('#warnBox');
+  if(skip){wb.style.display='block';wb.textContent=`ข้าม ${fmt(skip)} แถวที่อ่าน Day/เวลา/Counter ไม่ได้ ตัวอย่าง:\n${ex.join('\n')}`}else wb.style.display='none';
+
+  getEl('#drop').style.display='none';getEl('#app').style.display='';
+  getEl('#meta').textContent=`${S.fname} · ${sel==='__ALL__'?'ทุกชีต':'ชีต '+sel} · ${fmt(flights.length)} รายการ/สัปดาห์ · Day ${S.days.join(', ')}${S.alSheet?` · สายการบิน ${fmt(Object.keys(S.al).length)} ราย`:''}`;
+  initFilters();
+  showLoading('กำลังสร้าง Dashboard ...');await tick();
+  applyFilters();
+}
+
+/* ---------- FILTERS ---------- */
+function fillSel(el,vals,all=true,lbl=v=>v){el.innerHTML='';if(all)el.add(new Option('ทั้งหมด',''));vals.forEach(v=>el.add(new Option(lbl(v),String(v))))}
+function initFilters(){
+  const uniq=k=>[...new Set(S.all.map(r=>r[k]))].filter(Boolean).sort(nat);
+  const D7=[1,2,3,4,5,6,7];
+  fillSel(getEl('#fDay'),D7,true,dayLbl);
+  fillSel(getEl('#fRow'),Object.keys(S.rowCtr).sort(nat));
+  fillSel(getEl('#fAl'),[...new Set([...S.all,...S.blk].map(r=>r.airline))].filter(Boolean).sort(nat),true,alLbl);
+  fillSel(getEl('#fDes'),uniq('des'));fillSel(getEl('#fAc'),uniq('ac'));
+  ['#gDay','#frDay','#ckDay'].forEach(s=>fillSel(getEl(s),D7,false,dayLbl));
+  const cnt={};S.all.forEach(r=>cnt[r.day]=(cnt[r.day]||0)+1);
+  const busiest=(Object.entries(cnt).sort((a,b)=>b[1]-a[1])[0]||['1'])[0];
+  ['#gDay','#frDay','#ckDay'].forEach(s=>getEl(s).value=busiest);
+  const rows=Object.keys(S.rowCtr).sort(nat);
+  fillSel(getEl('#gRow'),rows,false,r=>`${r} (${S.rowCtr[r].size} เคาน์เตอร์)`);
+  const rc={};S.all.forEach(r=>rc[r.row]=(rc[r.row]||0)+1);
+  getEl('#gRow').value=(Object.entries(rc).filter(x=>S.rowCtr[x[0]].size>1).sort((a,b)=>b[1]-a[1])[0]||[rows[0]])[0];
+  fillSel(getEl('#frRow'),rows,true);
+}
+function bindDate(dId,sId,hId,cb){
+  getEl(dId).onchange=()=>{const v=getEl(dId).value,hEl=getEl(hId);
+    if(!v){hEl.textContent='';return}
+    const wd=wdOf(v);getEl(sId).value=String(wd);const {a,b}=seasonRange();
+    hEl.innerHTML=`${dmy(v)} = <b>${dayLbl(wd)}</b>`+(a&&b&&(v<a||v>b)?' <span class="warn">(อยู่นอกช่วง High Season)</span>':'');
+    if(cb)cb()};
+  getEl(sId).addEventListener('change',()=>{getEl(dId).value='';getEl(hId).textContent=''});
+}
+bindDate('#fDate','#fDay','#fDateHint',()=>applyFilters());
+bindDate('#gDate','#gDay','#gDateHint',()=>renderGantt());
+bindDate('#frDate','#frDay','#frDateHint');
+bindDate('#ckDate','#ckDay','#ckDateHint');
+
+let tmr;
+getEl('#q').oninput=()=>{clearTimeout(tmr);tmr=setTimeout(applyFilters,300)};
+['#fDay','#fRow','#fAl','#fDes','#fAc'].forEach(s=>getEl(s).onchange=applyFilters);
+getEl('#reset').onclick=()=>{getEl('#q').value='';getEl('#fDate').value='';getEl('#fDateHint').textContent='';
+  ['#fDay','#fRow','#fAl','#fDes','#fAc'].forEach(s=>getEl(s).value='');applyFilters()};
+const terms=()=>getEl('#q').value.toUpperCase().split(',').map(t=>t.replace(/\s+/g,'')).filter(Boolean);
+const matchQ=(r,t)=>!t.length||t.some(x=>r.s.includes(x));
+function applyFilters(){
+  const t=terms(),dy=getEl('#fDay').value,ro=getEl('#fRow').value,al=getEl('#fAl').value,de=getEl('#fDes').value,ac=getEl('#fAc').value;
+  const base=r=>(!dy||r.day===+dy)&&(!ro||r.row===ro)&&(!al||r.airline===al)&&matchQ(r,t);
+  S.f=S.all.filter(r=>base(r)&&(!de||r.des===de)&&(!ac||r.ac===ac));
+  S.fb=(de||ac)?[]:S.blk.filter(base);
+  S.page=1;
+  try{renderOverview()}catch(e){showError(e)}
+  try{renderConflicts()}catch(e){showError(e)}
+  try{renderTable()}catch(e){showError(e)}
+  try{renderBlocks()}catch(e){showError(e)}
+  try{renderAirlines()}catch(e){showError(e)}
+  try{renderAircraft()}catch(e){showError(e)}
+  if(getEl('.tab.active').dataset.t==='tl'){try{renderGantt()}catch(e){showError(e)}}
+}
+
+/* ---------- ANALYTICS ---------- */
+const hits=(r,a,b)=>r.segs.some(([x,y])=>[0,W,-W].some(k=>x+k<b&&y+k>a));
+const pieces=(r,ws,we)=>{const o=[];for(const [x,y] of r.segs)for(const k of [0,W,-W]){const a=Math.max(x+k,ws),b=Math.min(y+k,we);if(b>a)o.push([a,b])}return o};
+function segsByCounter(f){
+  const by=new Map();
+  for(const r of f)for(const [x,y] of r.segs){let a=by.get(r.counter);if(!a)by.set(r.counter,a=[]);a.push({b:x,e:y,r})}
+  for(const a of by.values())a.sort((p,q)=>p.b-q.b);return by;
+}
+function occupancy(f){
+  const by=segsByCounter(f),occ=new Map();
+  for(const [c,arr] of by){let tot=0,cs=-1,ce=-1;
+    for(const s of arr){if(s.b>ce){if(ce>cs)tot+=ce-cs;cs=s.b;ce=s.e}else ce=Math.max(ce,s.e)}
+    if(ce>cs)tot+=ce-cs;occ.set(c,tot)}
+  return occ;
+}
+function conflicts(f){
+  const sh=new Set(getEl('#shared').value.toUpperCase().split(',').map(s=>s.trim()).filter(Boolean));
+  const by=segsByCounter(f.filter(r=>!sh.has(r.row)));const pairs=new Map();
+  for(const [c,arr] of by)for(let i=0;i<arr.length;i++)for(let j=i+1;j<arr.length&&arr[j].b<arr[i].e;j++){
+    const A=arr[i],B=arr[j];if(A.r.id===B.r.id||A.r.airline===B.r.airline)continue;
+    const ov=Math.min(A.e,B.e)-B.b;if(ov<=0)continue;
+    const k=c+'|'+Math.min(A.r.id,B.r.id)+'|'+Math.max(A.r.id,B.r.id);
+    const p=pairs.get(k);if(p)p.ov+=ov;else pairs.set(k,{c,a:A.r,b:B.r,ov,at:B.b});
+  }
+  return [...pairs.values()];
+}
+function slots(f){
+  const hr=new Map(),q=new Map();
+  for(const r of f)for(const [x,y] of r.segs){
+    for(let t=Math.floor(x/60)*60;t<y;t+=60){const k=(t/60)%168;let m=hr.get(k);if(!m)hr.set(k,m=new Map());let s=m.get(r.row);if(!s)m.set(r.row,s=new Set());s.add(r.counter)}
+    for(let t=Math.floor(x/Q)*Q;t<y;t+=Q){const k=t%W;let s=q.get(k);if(!s)q.set(k,s=new Set());s.add(r.counter)}
+  }
+  return {hr,q};
+}
+function blockGroups(list){
+  const g=new Map();
+  list.forEach(r=>{const k=[r.day,r.airline,r.b,r.e].join('|');let o=g.get(k);
+    if(!o)g.set(k,o={day:r.day,airline:r.airline,b:r.b,e:r.e,dur:r.dur,ord:r.ord,cset:new Set(),rset:new Set()});
+    o.cset.add(r.counter);o.rset.add(r.row)});
+  return [...g.values()].map(o=>({...o,n:o.cset.size,ctrs:compress([...o.cset]),rows:[...o.rset].sort(nat).join(',')}))
+    .sort((a,b)=>a.ord-b.ord||nat(a.airline,b.airline));
+}
+function mkChart(id,cfg){
+  if(!window.Chart){const n=getEl('#noChart');n.style.display='block';n.className='warn';n.textContent='โหลดไลบรารีกราฟไม่สำเร็จ — ฟังก์ชันอื่นยังใช้งานได้ตามปกติ';return}
+  Chart.defaults.color=cv('--mut');Chart.defaults.borderColor=cv('--bd');Chart.defaults.font.family=cv('--font');Chart.defaults.elements.bar.borderRadius=4;
+  S.charts[id]?.destroy();S.charts[id]=new Chart(getEl('#'+id),cfg);
+}
+const baseOpt=(extra={})=>({responsive:true,maintainAspectRatio:false,animation:false,...extra});
+
+function renderOverview(){
+  const f=S.f,dy=getEl('#fDay').value,nD=dy?1:(S.days.length||1);
+  const fk=new Set(f.map(r=>r.day+'|'+r.flight));const flights=fk.size;
+  const fc=new Set(f.map(r=>r.day+'|'+r.flight+'|'+r.counter)).size;
+  const occ=occupancy(f);const occH=[...occ.values()].reduce((a,b)=>a+b,0)/60;
+  const {hr,q}=slots(f);let pk=0,pkT=0;for(const [t,s] of q)if(s.size>pk){pk=s.size;pkT=t}
+  const cf=conflicts(f).length;
+  const se=seasonWeekdays();const perDay=Array(8).fill(0);for(const k of fk)perDay[+k.split('|')[0]]++;
+  const seasonFlights=perDay.reduce((a,v,i)=>a+v*se.cnt[i],0);
+  const bg=blockGroups(S.fb);
+  const paxD=Array(8).fill(0);let unk=0;const seen=new Set();
+  f.forEach(r=>{const k=r.day+'|'+r.flight;if(seen.has(k))return;seen.add(k);if(r.seats==null)unk++;else paxD[r.day]+=r.seats*lf()});
+  const pax=paxD.reduce((a,v)=>a+v,0),seasonPax=paxD.reduce((a,v,i)=>a+v*se.cnt[i],0);
+  const KP=S.acSheet?[['ผู้โดยสารประมาณการ / สัปดาห์',fmt(pax),`เฉลี่ย ${fmt(pax/nD)} คน/วัน · ${fmt(pax/((flights-unk)||1))} คน/เที่ยวบิน · Load factor ${fmt(lf()*100)}%`+(unk?` · ไม่ทราบที่นั่ง ${fmt(unk)} เที่ยวบิน`:'')],
+    ['ประมาณการผู้โดยสารตลอด High Season',fmt(seasonPax),se.days?`${dmy(se.a)} – ${dmy(se.b)}`:'ยังไม่ได้กำหนดช่วง']]:[];
+  getEl('#sInfo').innerHTML=se.days
+    ?`รวม <b>${se.days}</b> วัน (${fmt(se.days/7)} สัปดาห์) · จำนวนวันแยกตาม Day: `+[1,2,3,4,5,6,7].map(i=>`${DSH[i-1]} ${se.cnt[i]}`).join(' · ')
+    :'<span class="warn">กรุณาระบุช่วง High Season ให้ถูกต้อง</span>';
+  const K=[['เที่ยวบิน / สัปดาห์',fmt(flights),`เฉลี่ย ${fmt(flights/nD)} เที่ยว/วัน`],
+    ['ประมาณการเที่ยวบินตลอด High Season',fmt(seasonFlights),se.days?`${dmy(se.a)} – ${dmy(se.b)}`:'ยังไม่ได้กำหนดช่วง'],
+    ['รายการจัดสรร / สัปดาห์',fmt(f.length),`เฉลี่ย ${fmt(f.length/nD)} รายการ/วัน`],
+    ['เคาน์เตอร์ที่ใช้งาน',fmt(new Set(f.map(r=>r.counter)).size),`จากทั้งหมด ${fmt(Object.keys(S.c2r).length)} เคาน์เตอร์`],
+    ['Counter-Hours / สัปดาห์',fmt(occH),`เฉลี่ย ${fmt(occH/nD)} ชม./วัน (ไม่นับซ้ำ)`],
+    ['เคาน์เตอร์ / เที่ยวบิน',fmt(fc/(flights||1)),'ค่าเฉลี่ย'],
+    ['ใช้เคาน์เตอร์พร้อมกันสูงสุด',fmt(pk),pk?`${wfmt(pkT)} (ช่วง 15 นาที)`:'-'],
+    ['สายการบิน / ปลายทาง',`${new Set(f.map(r=>r.airline)).size} / ${new Set(f.map(r=>r.des)).size}`,''],
+    ['เวลาทับซ้อน',`<span class="${cf?'warn':''}">${fmt(cf)}</span>`,'ต่างสายการบิน · เคาน์เตอร์เดียวกัน'],
+    ['Airline Block',fmt(bg.length),`${fmt(new Set(S.fb.map(r=>r.counter)).size)} เคาน์เตอร์ · ${new Set(S.fb.map(r=>r.airline)).size} สายการบิน (ไม่นับในสถิติเที่ยวบิน)`]];
+  getEl('#kpis').innerHTML=K.concat(KP).map(k=>`<div class="kpi"><div class="l">${k[0]}</div><div class="v">${k[1]}</div><div class="s">${k[2]}</div></div>`).join('');
+
+  const D7=[1,2,3,4,5,6,7];const da=Array(8).fill(0);f.forEach(r=>da[r.day]++);
+  mkChart('cDaily',{type:'bar',data:{labels:D7.map(d=>`Day${d} ${DSH[d-1]}`),datasets:[
+    {label:'รายการจัดสรร',data:D7.map(d=>da[d]),backgroundColor:cv('--c1'),yAxisID:'y'},
+    {label:'เที่ยวบิน',data:D7.map(d=>perDay[d]),type:'line',borderColor:cv('--red'),backgroundColor:cv('--red'),yAxisID:'y1',tension:.3}]},
+    options:baseOpt({scales:{y:{position:'left'},y1:{position:'right',grid:{drawOnChartArea:false}}}})});
+
+  getEl('#cardPax').style.display=S.acSheet?'':'none';
+  if(S.acSheet)mkChart('cPax',{type:'bar',data:{labels:D7.map(d=>`Day${d} ${DSH[d-1]}`),datasets:[{label:'ผู้โดยสารประมาณการ',data:D7.map(d=>Math.round(paxD[d])),backgroundColor:cv('--c2')}]},options:baseOpt({plugins:{legend:{display:false}}})});
+
+  const sum=Array(24).fill(0),mx=Array(24).fill(0),heat={},dh=Array.from({length:8},()=>Array(24).fill(0));
+  for(const [k,m] of hr){const h=k%24,d=Math.floor(k/24)+1;let tot=0;
+    for(const [row,s] of m){tot+=s.size;(heat[row]??=Array(24).fill(0))[h]+=s.size}
+    sum[h]+=tot;mx[h]=Math.max(mx[h],tot);dh[d][h]=tot}
+  mkChart('cHour',{type:'bar',data:{labels:[...Array(24).keys()].map(h=>pad(h)+':00'),datasets:[
+    {label:'เฉลี่ยต่อวัน',data:sum.map(v=>+(v/nD).toFixed(1)),backgroundColor:cv('--c2')},
+    {label:'สูงสุด',data:mx,type:'line',borderColor:cv('--amb'),backgroundColor:cv('--amb'),tension:.3}]},options:baseOpt()});
+
+  const ru={};for(const [c,ms] of occ){const r=S.c2r[c];ru[r]=(ru[r]||0)+ms}
+  const rk=Object.keys(ru).map(r=>[r,ru[r]/(S.rowCtr[r].size*DM*nD)*100]).sort((a,b)=>b[1]-a[1]);
+  mkChart('cRow',{type:'bar',data:{labels:rk.map(x=>`${x[0]} (${S.rowCtr[x[0]].size})`),datasets:[{label:'% การใช้งาน',data:rk.map(x=>+x[1].toFixed(1)),
+    backgroundColor:rk.map(x=>x[1]>=60?cv('--red'):x[1]>=35?cv('--amb'):cv('--grn'))}]},options:baseOpt({indexAxis:'y',plugins:{legend:{display:false}}})});
+
+  const al={};f.forEach(r=>{const o=al[r.airline]??={a:0,f:new Set()};o.a++;o.f.add(r.day+'|'+r.flight)});
+  const at=Object.entries(al).sort((a,b)=>b[1].a-a[1].a).slice(0,15);
+  mkChart('cAl',{type:'bar',data:{labels:at.map(x=>x[0]),datasets:[{label:'รายการจัดสรร',data:at.map(x=>x[1].a),backgroundColor:at.map(x=>color(x[0]))}]},
+    options:baseOpt({plugins:{legend:{display:false},tooltip:{callbacks:{title:i=>alLbl(i[0].label)}}}})});
+  mkChart('cCpf',{type:'bar',data:{labels:at.map(x=>x[0]),datasets:[{label:'เคาน์เตอร์/เที่ยวบิน',data:at.map(x=>+(x[1].a/x[1].f.size).toFixed(1)),backgroundColor:cv('--c4')}]},
+    options:baseOpt({plugins:{legend:{display:false},tooltip:{callbacks:{title:i=>alLbl(i[0].label)}}}})});
+
+  const de={};f.forEach(r=>{(de[r.des||'-']??=new Set()).add(r.day+'|'+r.flight)});
+  const dt=Object.entries(de).map(([k,s])=>[k,s.size]).sort((a,b)=>b[1]-a[1]).slice(0,15);
+  mkChart('cDes',{type:'bar',data:{labels:dt.map(x=>x[0]),datasets:[{label:'เที่ยวบิน/สัปดาห์',data:dt.map(x=>x[1]),backgroundColor:cv('--c5')}]},
+    options:baseOpt({indexAxis:'y',plugins:{legend:{display:false}}})});
+
+  const hh=[...Array(24).keys()].map(h=>`<th>${pad(h)}</th>`).join('');
+  const mxv=Math.max(1,...dh.flat());
+  let h1=`<table class="heat"><tr><th>Day</th>${hh}</tr>`;
+  for(const d of D7){h1+=`<tr><td><b>Day${d} ${DSH[d-1]}</b></td>`+dh[d].map(v=>{const a=v/mxv;
+    return `<td title="${dayLbl(d)} · ${v} เคาน์เตอร์" style="background:rgba(var(--heat2),${a.toFixed(2)});color:${a>.55?'var(--onheat)':'var(--txt)'}">${v||''}</td>`}).join('')+'</tr>'}
+  getEl('#heatDay').innerHTML=h1+'</table><div class="mut">ค่า = จำนวนเคาน์เตอร์ที่เที่ยวบินใช้ในชั่วโมงนั้น (สีเข้ม = หนาแน่น)</div>';
+
+  let h2=`<table class="heat"><tr><th>Row</th>${hh}</tr>`;
+  Object.keys(heat).sort(nat).forEach(r=>{h2+=`<tr><td><b>${r}</b></td>`+heat[r].map(v=>{const p=v/nD/S.rowCtr[r].size*100;const a=Math.min(p,100)/100;
+    return `<td title="Row ${r} · ${fmt(p)}%" style="background:rgba(var(--heat),${a.toFixed(2)});color:${a>.55?'var(--onheat)':'var(--txt)'}">${p>=1?Math.round(p):''}</td>`}).join('')+'</tr>'});
+  getEl('#heat').innerHTML=h2+'</table><div class="mut">ค่า = เคาน์เตอร์ที่ใช้งานเฉลี่ยในชั่วโมงนั้น ÷ เคาน์เตอร์ทั้งหมดใน Row (%)</div>';
+}
+
+/* ---------- GANTT ---------- */
+getEl('#gDay').onchange=renderGantt;getEl('#gRow').onchange=renderGantt;getEl('#gBlk').onchange=renderGantt;
+function renderGantt(){
+  const day=+getEl('#gDay').value,row=getEl('#gRow').value;if(!day||!S.rowCtr[row])return;
+  const ws=(day-1)*DM,we=ws+DM,t=terms(),showB=getEl('#gBlk').checked;
+  const recs=S.all.filter(r=>r.row===row&&hits(r,ws,we));
+  const blks=showB?S.blk.filter(r=>r.row===row&&hits(r,ws,we)):[];
+  const pos=(a,b)=>`left:${(a-ws)/DM*100}%;width:${Math.max((b-a)/DM*100,.3)}%`;
+  let html=`<div class="g-head"><div class="g-lbl">Counter</div><div class="g-hours">${[...Array(24).keys()].map(h=>`<div>${pad(h)}</div>`).join('')}</div></div>`;
+  for(const c of [...S.rowCtr[row]].sort(nat)){
+    const bb=blks.filter(r=>r.counter===c).flatMap(r=>pieces(r,ws,we).map(([a,b])=>
+      `<div class="blk" style="${pos(a,b)};background-color:${color(r.airline)}" title="${esc(`Airline Block: ${alLbl(r.airline)}\nCounter ${r.counter}\n${wfmt(r.b)} – ${wfmt(r.e)}`)}">${esc(r.airline)}</div>`)).join('');
+    const bars=recs.filter(r=>r.counter===c).flatMap(r=>{
+      const cls=t.length?(matchQ(r,t)?'hl':'dim'):'';
+      const tip=`${r.flight} → ${r.des}${S.al[r.airline]?'\n'+S.al[r.airline].en:''}\n${dayLbl(r.day)} · STD ${r.std}\nCounter ${r.counter}\nเปิด ${wfmt(r.b)} – ปิด ${wfmt(r.e)}\n${r.ac}${r.seats!=null?' · '+fmt(r.seats)+' ที่นั่ง':''}${r.cs?'\nCode share: '+r.cs:''}`;
+      return pieces(r,ws,we).map(([a,b])=>`<div class="bar ${cls}" style="${pos(a,b)};background:${color(r.airline)}" title="${esc(tip)}">${esc(r.flight)}</div>`)}).join('');
+    html+=`<div class="g-row"><div class="g-lbl">${c}</div><div class="g-track">${bb}${bars}</div></div>`;
+  }
+  getEl('#gantt').innerHTML=html+`<div class="mut" style="margin-top:8px">${recs.length} รายการเที่ยวบิน${showB?` · ${blks.length} รายการ Block`:''} ใน Row ${row} · ${dayLbl(day)} (รวมเที่ยวบินที่เช็กอินข้ามคืน)</div>`;
+}
+
+/* ---------- FINDER ---------- */
+getEl('#frGo').onclick=()=>{
+  const day=+getEl('#frDay').value,base=(day-1)*DM;
+  const t1=parseTime(getEl('#frFrom').value),t2=parseTime(getEl('#frTo').value);if(t1==null||t2==null)return;
+  const a=base+t1;let b=base+t2;if(b<=a)b+=DM;
+  const rows=getEl('#frRow').value?[getEl('#frRow').value]:Object.keys(S.rowCtr).sort(nat);
+  const busy=new Map(),rsv=new Map();
+  S.all.filter(r=>hits(r,a,b)).forEach(r=>{let x=busy.get(r.counter);if(!x)busy.set(r.counter,x=new Set());x.add(r.flight)});
+  S.blk.filter(r=>hits(r,a,b)).forEach(r=>{let x=rsv.get(r.counter);if(!x)rsv.set(r.counter,x=new Set());x.add(r.airline)});
+  let free=0,res=0,html=`<div style="margin-bottom:6px">ช่วงเวลา <b>${wfmt(a)} – ${wfmt(b)}</b> (${dayLbl(day)})</div>`;
+  rows.forEach(r=>{const cs=[...S.rowCtr[r]].sort(nat);let fr=0;
+    const chips=cs.map(c=>{
+      if(busy.has(c))return `<span class="chip busy" title="${esc([...busy.get(c)].join(', '))}">${c}</span>`;
+      if(rsv.has(c)){res++;return `<span class="chip rsv" title="Block: ${esc([...rsv.get(c)].join(', '))}">${c}</span>`}
+      fr++;return `<span class="chip">${c}</span>`}).join('');
+    free+=fr;html+=`<div style="margin:6px 0"><b>Row ${r}</b> — ว่าง ${fr}/${cs.length}<br>${chips}</div>`});
+  getEl('#frOut').innerHTML=`<div><b>ว่างจริง ${free}</b> · <span style="color:var(--amb)"><b>ว่างแต่อยู่ใน Airline Block ${res}</b></span></div>`+
+    `<div class="mut">เขียว = ว่าง · เหลือง = ไม่มีเที่ยวบินแต่สายการบินกันไว้ · แดง = มีเที่ยวบินใช้งาน (ชี้เพื่อดูรายละเอียด)</div>`+html;
+};
+getEl('#ckGo').onclick=()=>{
+  const c=getEl('#ckC').value.trim().toUpperCase();if(!c)return;
+  if(!S.c2r[c]){getEl('#ckOut').innerHTML=`<span class="warn">ไม่พบเคาน์เตอร์ ${esc(c)} ในข้อมูล</span>`;return}
+  const day=+getEl('#ckDay').value,base=(day-1)*DM,tm=parseTime(getEl('#ckT').value);if(tm==null)return;const t=base+tm;
+  const list=S.all.filter(r=>r.counter===c&&hits(r,base,base+DM)).sort((a,b)=>a.ord-b.ord);
+  const bl=S.blk.filter(r=>r.counter===c&&hits(r,base,base+DM));
+  const now=list.filter(r=>hits(r,t,t+1)),bnow=bl.filter(r=>hits(r,t,t+1));
+  let html=now.length?`<div style="margin-bottom:8px">${wfmt(t)} Counter <b>${c}</b> ถูกใช้โดย: ${now.map(r=>`<b>${esc(r.flight)}</b> (${esc(r.des)})${alTag(r)}`).join(', ')}</div>`
+    :`<div style="margin-bottom:8px;color:var(--grn)"><b>Counter ${c} ไม่มีเที่ยวบินใช้ ณ ${wfmt(t)}</b></div>`;
+  if(bnow.length)html+=`<div style="margin-bottom:8px;color:var(--amb)"><b>อยู่ใน Airline Block ของ: ${esc([...new Set(bnow.map(r=>r.airline))].join(', '))}</b></div>`;
+  html+=`<table><tr><th>Day</th><th>เที่ยวบิน</th><th>ปลายทาง</th><th>STD</th><th>เปิด</th><th>ปิด</th><th>เครื่องบิน</th></tr>`+
+    (list.map(r=>`<tr style="${now.includes(r)?'background:var(--hl)':''}"><td>Day${r.day}</td><td>${esc(r.flight)}</td><td>${esc(r.des)}</td><td>${esc(r.std)}</td><td>${wfmt(r.b)}</td><td>${wfmt(r.e)}</td><td>${esc(r.ac)}</td></tr>`).join('')||'<tr><td colspan=7>ไม่มีเที่ยวบินในวันนี้</td></tr>')+'</table>';
+  if(bl.length)html+=`<div class="mut" style="margin-top:8px">Airline Block วันนี้: `+bl.map(r=>`${esc(r.airline)} ${wfmt(r.b)}–${wfmt(r.e)}`).join(' · ')+'</div>';
+  getEl('#ckOut').innerHTML=html;
+};
+
+/* ---------- CONFLICTS ---------- */
+getEl('#shared').onchange=()=>{renderConflicts();renderOverview()};
+function renderConflicts(){
+  const cf=conflicts(S.f).sort((x,y)=>x.at-y.at);
+  getEl('#cfOut').innerHTML=`<div style="margin-bottom:8px"><b class="${cf.length?'warn':''}">พบ ${cf.length} คู่ที่เวลาทับซ้อน</b>${cf.length>2000?' (แสดง 2,000 รายการแรก)':''}</div>`+
+   (cf.length?`<div style="max-height:600px;overflow:auto"><table><tr><th>Counter</th><th>เที่ยวบิน A</th><th>ช่วงเวลา A</th><th>เที่ยวบิน B</th><th>ช่วงเวลา B</th><th>ทับซ้อน (นาที)</th></tr>`+
+   cf.slice(0,2000).map(x=>`<tr><td><b>${x.c}</b></td><td>${esc(x.a.flight)} (${esc(x.a.des)}) Day${x.a.day}${alTag(x.a)}</td><td>${wfmt(x.a.b)} – ${wfmt(x.a.e)}</td><td>${esc(x.b.flight)} (${esc(x.b.des)}) Day${x.b.day}${alTag(x.b)}</td><td>${wfmt(x.b.b)} – ${wfmt(x.b.e)}</td><td class="warn">${Math.round(x.ov)}</td></tr>`).join('')+'</table></div>':'');
+}
+
+/* ---------- TABLES ---------- */
+const dayCell=r=>`Day${r.day} ${DSH[r.day-1]}`;
+const COLS={alloc:[['day','Day',dayCell],['flight','เที่ยวบิน'],['airline','สายการบิน',r=>esc(alLbl(r.airline))],['std','STD'],['des','ปลายทาง'],['row','Row'],['counter','Counter'],
+  ['b','เปิดเช็กอิน',r=>wfmt(r.b)],['e','ปิดเช็กอิน',r=>wfmt(r.e)],['dur','ชม.',r=>(r.dur/60).toFixed(1)],['ac','เครื่องบิน'],['seats','ที่นั่ง',seatCell],['cs','Code Share'],['sheet','ชีต']],
+ flight:[['day','Day',dayCell],['flight','เที่ยวบิน'],['airline','สายการบิน',r=>esc(alLbl(r.airline))],['std','STD'],['des','ปลายทาง'],['rows','Row'],['n','จำนวนเคาน์เตอร์'],['ctrs','เคาน์เตอร์'],
+  ['b','เปิดแรกสุด',r=>wfmt(r.b)],['e','ปิดล่าสุด',r=>wfmt(r.e)],['ac','เครื่องบิน'],['seats','ที่นั่ง',seatCell],['ppc','ผู้โดยสาร/เคาน์เตอร์',ppcCell],['cs','Code Share']]};
+const BCOLS=[['day','Day',dayCell],['airline','สายการบิน',r=>esc(alLbl(r.airline))],['rows','Row'],['n','จำนวนเคาน์เตอร์'],['ctrs','เคาน์เตอร์'],
+  ['b','เริ่ม',r=>wfmt(r.b)],['e','สิ้นสุด',r=>wfmt(r.e)],['dur','ชม.',r=>(r.dur/60).toFixed(1)]];
+function compress(list){
+  const g={};list.forEach(c=>{const m=c.match(/^([A-Z]+)(\d+)$/);if(m)(g[m[1]]??=[]).push(+m[2]);else (g[c]??=[]).push(null)});
+  return Object.keys(g).sort().map(p=>{const n=[...new Set(g[p])].filter(x=>x!=null).sort((a,b)=>a-b);if(!n.length)return p;
+    const f=x=>p+String(x).padStart(2,'0');const out=[];let s=n[0],e=n[0];
+    for(let i=1;i<=n.length;i++){if(n[i]===e+1)e=n[i];else{out.push(s===e?f(s):`${f(s)}–${f(e)}`);s=e=n[i]}}return out.join(', ')}).join(', ');
+}
+function tableData(){
+  if(getEl('#view').value==='alloc')return S.f;
+  const g=new Map();
+  S.f.forEach(r=>{const k=r.day+'|'+r.flight;let o=g.get(k);if(!o)g.set(k,o={...r,cset:new Set(),rset:new Set()});
+    o.cset.add(r.counter);o.rset.add(r.row);o.bu=Math.min(o.bu,r.bu);o.eu=Math.max(o.eu,r.eu)});
+  return [...g.values()].map(o=>({...o,b:o.bu,e:o.eu,n:o.cset.size,ppc:o.seats==null?null:o.seats*lf()/o.cset.size,ctrs:compress([...o.cset]),rows:[...o.rset].sort().join(',')}));
+}
+function renderTable(){
+  const cols=COLS[getEl('#view').value];const data=[...tableData()];const k=S.sortK,d=S.sortD;
+  data.sort((a,b)=>{const x=a[k],y=b[k];const c=(typeof x==='number'&&typeof y==='number')?x-y:String(x??'').localeCompare(String(y??''),undefined,{numeric:true});
+    return (c||a.ord-b.ord)*d});
+  const ps=+getEl('#psz').value,pages=Math.max(1,Math.ceil(data.length/ps));S.page=Math.min(S.page,pages);
+  const slice=data.slice((S.page-1)*ps,S.page*ps);
+  getEl('#tbl').innerHTML='<tr>'+cols.map(c=>`<th data-k="${c[0]}">${c[1]}${k===c[0]?(d>0?' ▲':' ▼'):''}</th>`).join('')+'</tr>'+
+    slice.map(r=>'<tr>'+cols.map(c=>`<td>${c[2]?c[2](r):esc(r[c[0]])}</td>`).join('')+'</tr>').join('');
+  getAll('#tbl th').forEach(th=>th.onclick=()=>{const kk=th.dataset.k;S.sortD=S.sortK===kk?-S.sortD:1;S.sortK=kk;renderTable()});
+  getEl('#pinfo').textContent=`หน้า ${S.page} / ${pages}`;getEl('#tbInfo').textContent=`${fmt(data.length)} แถว`;
+  S.tableCache={cols,data};
+}
+function renderBlocks(){
+  const data=blockGroups(S.fb);
+  getEl('#bkInfo').textContent=`${fmt(data.length)} Block · ${fmt(S.fb.length)} รายการเคาน์เตอร์ (ตามตัวกรองปัจจุบัน)`+(data.length>3000?' · แสดง 3,000 แถวแรก':'');
+  getEl('#bkTbl').innerHTML='<tr>'+BCOLS.map(c=>`<th>${c[1]}</th>`).join('')+'</tr>'+
+    data.slice(0,3000).map(r=>'<tr>'+BCOLS.map(c=>`<td>${c[2]?c[2](r):esc(r[c[0]])}</td>`).join('')+'</tr>').join('');
+  S.blkCache={cols:BCOLS,data};
+}
+function downloadCSV(cache,fname){
+  if(!cache)return;const {cols,data}=cache;const strip=s=>String(s).replace(/<[^>]+>/g,'').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&amp;/g,'&');
+  const csv=[cols.map(c=>c[1]).join(',')].concat(data.map(r=>cols.map(c=>`"${strip(c[2]?c[2](r):r[c[0]]??'').replace(/"/g,'""')}"`).join(','))).join('\r\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv'}));a.download=fname;a.click();
+}
+getEl('#view').onchange=()=>{S.page=1;renderTable()};getEl('#psz').onchange=()=>{S.page=1;renderTable()};
+getEl('#prev').onclick=()=>{if(S.page>1){S.page--;renderTable()}};getEl('#next').onclick=()=>{S.page++;renderTable()};
+getEl('#csv').onclick=()=>downloadCSV(S.tableCache,'counter_allocation_weekly.csv');
+getEl('#bkCsv').onclick=()=>downloadCSV(S.blkCache,'airline_blocks.csv');
+
+/* ---------- AIRLINE SHEET (IATA Code / English / Thai / Country) ---------- */
+function findAirlines(wb){
+  const nk=s=>String(s).toLowerCase().replace(/[\s_.\-()\/]/g,'');
+  let best={name:null,map:{}},bestN=0;
+  for(const n of wb.SheetNames){
+    const rows=XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:false,defval:''});
+    let hd=-1,I=null,skip=false;
+    for(let i=0;i<Math.min(30,rows.length);i++){
+      const c=rows[i].map(nk);
+      if((c.includes('flight')&&c.some(x=>x.startsWith('counter')))||c.some(x=>/seat|capacity|ที่นั่ง/.test(x))){skip=true;break}
+      if(I||i>=10)continue;
+      let a=c.findIndex(x=>x.includes('iata'));if(a<0)a=c.findIndex(x=>x==='code'||x==='airlinecode'||x==='carrier'||x==='รหัส');
+      if(a<0)continue;
+      const f=p=>c.findIndex((x,j)=>j!==a&&p(x));
+      let en=f(x=>x.includes('fullname')||x.includes('english')||x==='airlinename');
+      if(en<0)en=f(x=>x.includes('name')||x==='airline');
+      if(en>=0){hd=i;I={a,en}}
+    }
+    if(skip)continue;
+    if(!I){ // ไม่มีหัวตาราง: A = รหัส, B = ชื่อ
+      const body=rows.filter(r=>r[0]||r[1]);
+      if(body.length<2||body.filter(r=>/^[A-Z0-9]{2}$/.test(String(r[0]).trim().toUpperCase())).length<body.length*.6)continue;
+      hd=-1;I={a:0,en:1};
+    }
+    const map={};let cnt=0;const g=(r,k)=>k>=0?String(r[k]??'').trim():'';
+    for(const r of rows.slice(hd+1)){const c=g(r,I.a).toUpperCase(),en=g(r,I.en);if(c&&en&&!map[c]){map[c]={en};cnt++}}
+    if(cnt>bestN){bestN=cnt;best={name:n,map}}
+  }
+  return best;
+}
+
+/* ---------- AIRLINES TAB ---------- */
+const AL_COLS=[['code','IATA Code'],['en','Airline Full Name (English)'],['fl','เที่ยวบิน/สัปดาห์'],['s','ผู้โดยสารประมาณการ/สัปดาห์'],['n','รายการจัดสรร'],['bk','Block'],['st','สถานะ']];
+function renderAirlines(){
+  const st={},bk={};
+  S.f.forEach(r=>{const o=st[r.airline]??={n:0,f:new Set(),s:0};o.n++;const k=r.day+'|'+r.flight;if(!o.f.has(k)){o.f.add(k);if(r.seats!=null)o.s+=r.seats*lf()}});
+  S.fb.forEach(r=>{bk[r.airline]=(bk[r.airline]||0)+1});
+  const used=new Set([...S.all,...S.blk].map(r=>r.airline)),q=getEl('#alQ').value.trim().toUpperCase();
+  const codes=new Set(getEl('#alMode').value==='all'?[...Object.keys(S.al),...used]:used);
+  const missing=[...used].filter(c=>S.alSheet&&!S.al[c]).sort(nat);
+  let data=[...codes].map(c=>{const a=S.al[c];return {code:c,en:a?a.en:'',fl:st[c]?st[c].f.size:0,s:st[c]?Math.round(st[c].s):0,n:st[c]?st[c].n:0,bk:bk[c]||0,st:a?'ok':(S.alSheet?'miss':'')}})
+    .filter(d=>!q||[d.code,d.en].join(' ').toUpperCase().includes(q));
+  const {k,d}=S.alSort;
+  data.sort((a,b)=>{const x=a[k],y=b[k];return (typeof x==='number'?x-y:String(x).localeCompare(String(y),undefined,{numeric:true}))*d||nat(a.code,b.code)});
+  const stCell=r=>r.st==='ok'?'<span class="badge b-O">พบในชีต</span>':r.st==='miss'?'<span class="badge b-B">ไม่พบในชีต</span>':'';
+  const cols=AL_COLS.map(c=>c[0]==='st'?[c[0],c[1],stCell]:c);
+  getEl('#alTbl').innerHTML='<tr>'+AL_COLS.map(c=>`<th data-k="${c[0]}">${c[1]}${k===c[0]?(d>0?' ▲':' ▼'):''}</th>`).join('')+'</tr>'+
+    (data.map(r=>`<tr><td><b>${esc(r.code)}</b></td><td>${esc(r.en)||'<span class="mut">-</span>'}</td><td>${fmt(r.fl)}</td><td>${S.acSheet?fmt(r.s):'-'}</td><td>${fmt(r.n)}</td><td>${fmt(r.bk)}</td><td>${stCell(r)}</td></tr>`).join('')||'<tr><td colspan=7>ไม่พบรายการ</td></tr>');
+  getAll('#alTbl th').forEach(th=>th.onclick=()=>{const kk=th.dataset.k;S.alSort={k:kk,d:S.alSort.k===kk?-S.alSort.d:(['n','fl','bk','s'].includes(kk)?-1:1)};renderAirlines()});
+  S.alCache={cols:cols.map(c=>c.length===3?c:[c[0],c[1]]),data};
+  getEl('#alInfo').innerHTML=S.alSheet?`ชีต "${esc(S.alSheet.trim())}" · ${fmt(Object.keys(S.al).length)} สายการบิน · แสดง ${fmt(data.length)} แถว`+(missing.length?` · <span class="warn">ไม่พบในชีต ${missing.length} รหัส: ${esc(missing.join(', '))}</span>`:''):'ไม่พบชีตสายการบิน (IATA Code / ชื่อสายการบิน) ในไฟล์นี้ — แสดงเฉพาะรหัสที่พบในข้อมูล';
+}
+getEl('#alQ').oninput=renderAirlines;getEl('#alMode').onchange=renderAirlines;
+getEl('#alCsv').onclick=()=>downloadCSV(S.alCache,'airlines.csv');
+
+/* ---------- AIRCRAFT TYPES DATA (type -> seats) ---------- */
+const seatNum=v=>{const m=String(v??'').replace(/,/g,'').match(/\d+(\.\d+)?/);return m?+m[0]:null};
+function findAircraft(wb,skipName){
+  const nk=x=>String(x).toLowerCase().replace(/[\s_.\-()\/]/g,'');
+  let best={name:null,map:{},rows:[]};
+  for(const n of wb.SheetNames){
+    if(n===skipName)continue;
+    const rows=XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:false,defval:''});
+    for(let i=0;i<Math.min(15,rows.length);i++){
+      const c=rows[i].map(nk);
+      if(c.includes('flight')&&c.some(x=>x.startsWith('counter')))break;
+      let sc=c.findIndex(x=>/total|รวม/.test(x)&&/seat|capacity|pax|ที่นั่ง/.test(x));
+      if(sc<0)sc=c.findIndex(x=>/seat|capacity|pax|passenger|ที่นั่ง|ผู้โดยสาร/.test(x));
+      if(sc<0)continue;
+      const nc=c.findIndex((x,j)=>j!==sc&&/name|model|description|ชื่อ|รุ่น/.test(x));
+      const kc=c.map((x,j)=>j!==sc&&j!==nc&&/iata|icao|code|type|aircraft|ประเภท/.test(x)?j:-1).filter(j=>j>=0);
+      if(!kc.length)continue;
+      const map={},list=[];
+      for(const r of rows.slice(i+1)){
+        const seats=seatNum(r[sc]),keys=kc.map(j=>acKey(r[j])).filter(Boolean);
+        if(seats==null||!keys.length)continue;
+        const rec={code:String(r[kc[0]]).trim().toUpperCase(),alt:kc.slice(1).map(j=>String(r[j]).trim().toUpperCase()).filter(Boolean).join(' / '),name:nc>=0?String(r[nc]).trim():'',seats,keys};
+        list.push(rec);keys.forEach(k=>{if(!map[k])map[k]=rec});
+      }
+      if(list.length>best.rows.length)best={name:n,map,rows:list};
+      break;
+    }
+  }
+  return best;
+}
+
+/* ---------- AIRCRAFT TAB ---------- */
+const AC_COLS=[['code','IATA code'],['alt','ICAO code'],['name','ชื่อ / รุ่น'],['seats','Seats'],['fl','เที่ยวบิน/สัปดาห์'],['n','รายการจัดสรร'],['st','สถานะ']];
+function renderAircraft(){
+  const st={};S.f.forEach(r=>{const k=acKey(r.ac);if(!k)return;const o=st[k]??={n:0,f:new Set()};o.n++;o.f.add(r.day+'|'+r.flight)});
+  const used=new Set(S.all.map(r=>acKey(r.ac)).filter(Boolean)),q=getEl('#acQ').value.trim().toUpperCase(),all=getEl('#acMode').value==='all';
+  const cnt=a=>a.keys.reduce((t,k)=>({fl:t.fl+(st[k]?st[k].f.size:0),n:t.n+(st[k]?st[k].n:0)}),{fl:0,n:0});
+  let data=S.acRows.filter(a=>all||a.keys.some(k=>used.has(k))).map(a=>({code:a.code,alt:a.alt,name:a.name,seats:a.seats,...cnt(a),st:'ok'}));
+  const miss=[...used].filter(k=>!S.ac[k]).sort(nat);
+  miss.forEach(k=>data.push({code:k,alt:'',name:'',seats:null,fl:st[k]?st[k].f.size:0,n:st[k]?st[k].n:0,st:S.acSheet?'miss':''}));
+  data=data.filter(d=>!q||[d.code,d.alt,d.name].join(' ').toUpperCase().includes(q));
+  const {k,d}=S.acSort;
+  data.sort((a,b)=>{const x=a[k]??'',y=b[k]??'';return (typeof x==='number'&&typeof y==='number'?x-y:String(x).localeCompare(String(y),undefined,{numeric:true}))*d||nat(a.code,b.code)});
+  const stCell=r=>r.st==='ok'?'<span class="badge b-O">พบในชีต</span>':r.st==='miss'?'<span class="badge b-B">ไม่พบในชีต</span>':'';
+  getEl('#acTbl').innerHTML='<tr>'+AC_COLS.map(c=>`<th data-k="${c[0]}">${c[1]}${k===c[0]?(d>0?' ▲':' ▼'):''}</th>`).join('')+'</tr>'+
+    (data.map(r=>`<tr><td><b>${esc(r.code)||'<span class="mut">-</span>'}</b></td><td>${esc(r.alt)}</td><td>${esc(r.name)||'<span class="mut">-</span>'}</td><td>${seatCell(r)}</td><td>${fmt(r.fl)}</td><td>${fmt(r.n)}</td><td>${stCell(r)}</td></tr>`).join('')||'<tr><td colspan=7>ไม่พบรายการ</td></tr>');
+  getAll('#acTbl th').forEach(th=>th.onclick=()=>{const kk=th.dataset.k;S.acSort={k:kk,d:S.acSort.k===kk?-S.acSort.d:(['seats','fl','n'].includes(kk)?-1:1)};renderAircraft()});
+  S.acCache={cols:AC_COLS.map(c=>c[0]==='st'?[c[0],c[1],r=>r.st==='ok'?'พบในชีต':r.st==='miss'?'ไม่พบในชีต':'']:[c[0],c[1]]),data};
+  getEl('#acInfo').innerHTML=S.acSheet?`ชีต "${esc(S.acSheet.trim())}" · ${fmt(S.acRows.length)} รุ่น · Load factor ${fmt(lf()*100)}%`+(miss.length?` · <span class="warn">ไม่พบ ${miss.length} รุ่น: ${esc(miss.join(', '))}</span>`:''):'ไม่พบชีต Aircraft Types Data (ต้องมีคอลัมน์ประเภทเครื่องบินและ Seats) ในไฟล์นี้';
+}
+getEl('#acQ').oninput=renderAircraft;getEl('#acMode').onchange=renderAircraft;
+getEl('#acCsv').onclick=()=>downloadCSV(S.acCache,'aircraft_types.csv');
+try{const v=localStorage.getItem('ccd_lf_w26');if(v)getEl('#lf').value=v}catch(e){}
+getEl('#lf').onchange=()=>{try{localStorage.setItem('ccd_lf_w26',getEl('#lf').value)}catch(e){}
+  if(S.all.length)try{renderOverview();renderTable();renderAirlines();renderAircraft()}catch(e){showError(e)}};
+
+/* ---------- TABS ---------- */
+getAll('.tab').forEach(t=>{t.tabIndex=0;t.setAttribute('role','button');t.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();t.click()}}});
+getAll('.tab').forEach(t=>t.onclick=()=>{getAll('.tab').forEach(x=>x.classList.remove('active'));getAll('.panel').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');getEl('#p-'+t.dataset.t).classList.add('active');if(t.dataset.t==='tl')renderGantt()});
+})();
+</script>
+</body>
+</html>
